@@ -23,7 +23,7 @@ class Settings:
             or _normalise_host(os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434"))
         )
     )
-    model: str = field(default_factory=lambda: os.environ.get("FIELDMATE_MODEL", "llama3.2:3b"))
+    model: str = field(default_factory=lambda: os.environ.get("FIELDMATE_MODEL", "qwen2.5:3b"))
     temperature: float = field(default_factory=lambda: _env_float("FIELDMATE_TEMPERATURE", 0.0))
     request_timeout_s: float = field(
         default_factory=lambda: _env_float("FIELDMATE_TIMEOUT_S", 300.0)

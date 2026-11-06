@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     OLLAMA_HOST=http://ollama:11434 \
-    FIELDMATE_MODEL=llama3.2:3b
+    FIELDMATE_MODEL=qwen2.5:3b
 
 WORKDIR /app
 COPY requirements.txt .

@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    entrypoint: ["ollama", "pull", "${FIELDMATE_MODEL:-llama3.2:3b}"]
+    entrypoint: ["ollama", "pull", "${FIELDMATE_MODEL:-qwen2.5:3b}"]
     restart: "no"
 
   app:
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
     environment:
       - OLLAMA_HOST=http://ollama:11434
-      - FIELDMATE_MODEL=${FIELDMATE_MODEL:-llama3.2:3b}
+      - FIELDMATE_MODEL=${FIELDMATE_MODEL:-qwen2.5:3b}
     ports:
       - "8000:8000"
     restart: unless-stopped
