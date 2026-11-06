@@ -54,13 +54,22 @@ def _one_run(client: OllamaClient, model: str, kind: str, i: int = 0) -> Generat
     return metrics
 
 
-def run_perf(models: list[str], runs: int, out_dir: Path, client: OllamaClient | None = None):
+def run_perf(
+    models: list[str],
+    runs: int,
+    out_dir: Path,
+    client: OllamaClient | None = None,
+    skip_done: bool = False,
+):
     client = client or OllamaClient()
     out_dir.mkdir(parents=True, exist_ok=True)
     summary_path = out_dir / "perf_summary.json"
     summary = json.loads(summary_path.read_text()) if summary_path.exists() else {}
     summary.update({"runs_per_prompt": runs, "max_tokens": MAX_TOKENS})
     for model in models:
+        if skip_done and model in summary:
+            print(f"[perf] {model}: already measured, skipping", flush=True)
+            continue
         raw_path = out_dir / f"perf_{safe_name(model)}.jsonl"
         raw_path.unlink(missing_ok=True)
         hw = hardware_info()

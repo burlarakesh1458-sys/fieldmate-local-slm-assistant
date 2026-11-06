@@ -109,12 +109,13 @@ def bench_perf(
     models: list[str] = typer.Option(..., "--model", "-m"),
     runs: int = typer.Option(5, help="Warm runs per prompt type"),
     out: Path = typer.Option(DEFAULT_RESULTS, "--out"),
+    skip_done: bool = typer.Option(False, help="Skip models already in perf_summary.json"),
 ) -> None:
     """TTFT, tokens/s, latency (mean/p50/p95) and peak RSS per model."""
     from .bench.perf import run_perf
 
-    s = run_perf(models, runs, out)
-    typer.echo(json.dumps({m: s[m] for m in models}, indent=2))
+    s = run_perf(models, runs, out, skip_done=skip_done)
+    typer.echo(json.dumps({m: s.get(m) for m in models}, indent=2))
 
 
 @bench_app.command("quality")

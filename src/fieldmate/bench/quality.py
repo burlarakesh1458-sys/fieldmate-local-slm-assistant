@@ -10,7 +10,7 @@ import json
 import statistics
 from pathlib import Path
 
-from ..client import OllamaClient
+from ..client import OllamaClient, OllamaError
 from ..extractor import Extractor, total_metrics
 from ..prompts import chat_messages
 from .common import (
@@ -34,12 +34,25 @@ def load_testset(path: Path, limit: int | None = None, kinds: list[str] | None =
 
 def run_item(client: OllamaClient, extractor: Extractor, model: str, item: dict, constrained: bool):
     if item["kind"] == "qa":
-        res = client.chat(
-            chat_messages(item["input"], item.get("context")),
-            model=model,
-            temperature=0.0,
-            options={"num_predict": 200, "seed": 42},
-        )
+        try:
+            res = client.chat(
+                chat_messages(item["input"], item.get("context")),
+                model=model,
+                temperature=0.0,
+                options={"num_predict": 200, "seed": 42},
+            )
+        except OllamaError as exc:
+            return {
+                "id": item["id"],
+                "kind": "qa",
+                "infra_error": f"ollama error: {exc}",
+                "answer": "",
+                "rubric_score": 0.0,
+                "latency_s": 0.0,
+                "tokens_per_s": 0.0,
+                "output_tokens": 0,
+                "prompt_tokens": 0,
+            }
         m = res.metrics
         return {
             "id": item["id"],
@@ -122,6 +135,7 @@ def run_quality(
     constrained: bool = True,
     tag: str = "quality",
     client: OllamaClient | None = None,
+    max_infra_errors: int = 2,
 ):
     client = client or OllamaClient()
     extractor = Extractor(client)
@@ -132,12 +146,20 @@ def run_quality(
         raw = out_dir / f"{tag}_{safe_name(model)}.jsonl"
         done = {r["id"] for r in read_jsonl(raw) if not r.get("infra_error")}
         hw = hardware_info()
+        consecutive_infra = 0
         with MemorySampler() as mem:
             for item in items:
                 if item["id"] in done:
                     continue
                 row = run_item(client, extractor, model, item, constrained)
                 append_jsonl(raw, row)
+                # circuit breaker: e.g. runner OOM-killed on a shared box -> stop, resume later
+                consecutive_infra = consecutive_infra + 1 if row.get("infra_error") else 0
+                if consecutive_infra >= max_infra_errors:
+                    raise RuntimeError(
+                        f"{model}: {consecutive_infra} consecutive Ollama errors "
+                        f"({row['infra_error']}); aborting - rerun to resume"
+                    )
                 score = row.get("field_accuracy", row.get("rubric_score"))
                 print(
                     f"[{tag}] {model} {item['id']} score={score:.2f} "
