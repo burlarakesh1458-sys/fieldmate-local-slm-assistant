@@ -21,7 +21,7 @@ SYSTEM_EXTRACT = (
     "You are FieldMate, an offline assistant for a drone operations team. "
     "Convert the pilot's messy note into JSON that matches the schema exactly. "
     "Use only facts in the note; use null when a value is not stated. "
-    "Aircraft IDs are upper-case with a hyphen, e.g. XY-12.\n\n" + OPS_RULES
+    "Copy the aircraft ID from the note, upper-case (null if the note has none).\n\n" + OPS_RULES
 )
 
 SYSTEM_CHAT = (
