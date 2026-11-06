@@ -1,0 +1,6 @@
+2026-11-02 UAV-07: prop tip chipped, replaced with spare prop set P-14. Cleared to fly.
+2026-11-03 H6-01: motor 4 overheated and stopped in flight; motor replaced, test hover ok. Cleared to fly.
+2026-11-04 AERO-2: battery pack B3 swollen; pack quarantined in fire-safe bag. Aircraft OK with other packs.
+2026-11-04 Q4-ALPHA: flight controller rebooted in flight. GROUNDED pending FC replacement.
+2026-11-05 MAPPER-5: RC link loss 4 s at 600 m, RTH triggered. Antenna re-seated. GROUNDED until range test passes.
+2026-11-05 UAV-12: scratch on top shell. Cosmetic, no action.
