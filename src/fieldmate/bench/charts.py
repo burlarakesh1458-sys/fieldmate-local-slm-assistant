@@ -82,6 +82,11 @@ def perf_chart(results: Path, out: Path) -> Path | None:
 
 def quality_chart(results: Path, out: Path, tag: str = "quality") -> Path | None:
     s = _load(results / f"{tag}_summary.json")
+    if tag == "quant" and s and not any("q8_0" in k for k in s):
+        # the default llama3.2:1b tag is the Q8_0 build: reuse its main-study row as the Q8_0 point
+        base = _load(results / "quality_summary.json").get("llama3.2:1b")
+        if base:
+            s = {"llama3.2:1b (Q8_0)": base, **s}
     models = _models(s)
     if not models:
         return None
@@ -118,17 +123,34 @@ def quality_chart(results: Path, out: Path, tag: str = "quality") -> Path | None
 
 def tradeoff_chart(results: Path, out: Path, tag: str, title: str, fname: str) -> Path | None:
     s = _load(results / f"{tag}_summary.json")
+    if tag == "quant" and s and not any("q8_0" in k for k in s):
+        # the default llama3.2:1b tag is the Q8_0 build: reuse its main-study row as the Q8_0 point
+        base = _load(results / "quality_summary.json").get("llama3.2:1b")
+        if base:
+            s = {"llama3.2:1b (Q8_0)": base, **s}
     models = _models(s)
     if not models:
         return None
+    # RAM comes from the perf runs, which sample one loaded model at a time (the quality runs can
+    # overlap with the previous model's runner shutting down)
+    rss = {
+        **_load(results / "quant_perf" / "perf_summary.json"),
+        **_load(results / "perf_summary.json"),
+    }
+    if "llama3.2:1b" in rss:
+        rss["llama3.2:1b (Q8_0)"] = rss["llama3.2:1b"]
+
+    def ram_mb(m: str) -> float:
+        return (rss.get(m) or {}).get("peak_rss_mb") or s[m].get("peak_rss_mb", 500)
+
     fig, ax = plt.subplots(figsize=(7, 4.5))
     for i, m in enumerate(models):
         x = s[m]["latency_s"]["p50"]
         y = s[m].get("field_accuracy", 0)
-        size = max(s[m].get("peak_rss_mb", 500) / 6, 40)
+        size = max(ram_mb(m) / 6, 40)
         ax.scatter(x, y, s=size, color=COLORS[i % len(COLORS)], alpha=0.75, label=m)
         ax.annotate(
-            f"{m}\n{s[m].get('peak_rss_mb', 0) / 1024:.1f} GiB",
+            f"{m}\n{ram_mb(m) / 1024:.1f} GiB",
             (x, y),
             textcoords="offset points",
             xytext=(8, -4),

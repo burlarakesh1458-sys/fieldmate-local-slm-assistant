@@ -7,6 +7,7 @@ and throughput. Results are appended to JSONL as we go so a long run can be resu
 from __future__ import annotations
 
 import json
+import os
 import statistics
 from pathlib import Path
 
@@ -124,6 +125,7 @@ def summarize_rows(rows: list[dict]) -> dict:
     out["latency_s"] = summarize([r["latency_s"] for r in rows])
     out["tokens_per_s"] = summarize([r["tokens_per_s"] for r in rows if r["tokens_per_s"]])
     out["infra_errors"] = sum(1 for r in rows if r.get("infra_error"))
+    out["load_avg_1m_during"] = summarize([r["load_avg_1m"] for r in rows if r.get("load_avg_1m")])
     return out
 
 
@@ -152,6 +154,7 @@ def run_quality(
                 if item["id"] in done:
                     continue
                 row = run_item(client, extractor, model, item, constrained)
+                row["load_avg_1m"] = round(os.getloadavg()[0], 2)
                 append_jsonl(raw, row)
                 # circuit breaker: e.g. runner OOM-killed on a shared box -> stop, resume later
                 consecutive_infra = consecutive_infra + 1 if row.get("infra_error") else 0

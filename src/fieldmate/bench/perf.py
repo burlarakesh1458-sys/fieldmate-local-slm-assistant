@@ -9,7 +9,15 @@ from pathlib import Path
 from ..client import GenerationMetrics, OllamaClient
 from ..prompts import chat_messages, extraction_messages
 from ..schemas import json_schema_for
-from .common import MemorySampler, append_jsonl, hardware_info, safe_name, summarize, write_json
+from .common import (
+    MemorySampler,
+    append_jsonl,
+    hardware_info,
+    read_jsonl,
+    safe_name,
+    summarize,
+    write_json,
+)
 
 # Each warm run uses a *different* user message so llama.cpp's prompt cache can only reuse the
 # shared system-prompt prefix - the same situation as a real deployment.
@@ -92,7 +100,9 @@ def run_perf(
                         f"ttft {m.ttft_s:.2f}s wall {m.wall_s:.2f}s",
                         flush=True,
                     )
+        loads = [r.get("load_avg_1m") for r in read_jsonl(raw_path) if r.get("load_avg_1m")]
         model_sum = {
+            "load_avg_1m_during": summarize(loads),
             "cold_load_s": round(cold.load_s, 3),
             "cold_ttft_s": round(cold.ttft_s or 0, 3),
             "peak_rss_mb": round(mem.peak_mb, 1),

@@ -1,0 +1,236 @@
+{
+  "summary": {
+    "model": "llama3.2:3b",
+    "n_runs": 4,
+    "items": [
+      "df-01",
+      "df-03",
+      "df-11",
+      "pf-03",
+      "pf-05",
+      "pf-13",
+      "qa-01",
+      "qa-02"
+    ],
+    "by_temperature": {
+      "0.0": {
+        "exact_match_rate_extraction": 0.9583,
+        "exact_match_rate_qa": 1.0,
+        "schema_valid_rate": 0.6667,
+        "field_agreement": 0.6667,
+        "field_accuracy_mean": 0.4792,
+        "field_accuracy_stdev": 0.0,
+        "text_similarity_extraction": 0.9816,
+        "text_similarity_qa": 1.0,
+        "embedding_similarity_extraction": 0.9961,
+        "embedding_similarity_qa": 1.0
+      },
+      "0.7": {
+        "exact_match_rate_extraction": 0.4167,
+        "exact_match_rate_qa": 0.625,
+        "schema_valid_rate": 0.7917,
+        "field_agreement": 0.7604,
+        "field_accuracy_mean": 0.5729,
+        "field_accuracy_stdev": 0.1511,
+        "text_similarity_extraction": 0.8637,
+        "text_similarity_qa": 0.8055,
+        "embedding_similarity_extraction": 0.9667,
+        "embedding_similarity_qa": 0.8432
+      }
+    }
+  },
+  "per_item": [
+    {
+      "id": "df-01",
+      "kind": "defect",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.5,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0000000000000002
+    },
+    {
+      "id": "df-01",
+      "kind": "defect",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.25,
+      "schema_valid_rate": 0.75,
+      "field_agreement": 0.75,
+      "field_accuracy_mean": 0.375,
+      "field_accuracy_stdev": 0.21650635094610965,
+      "text_similarity": 0.9296111735439513,
+      "embedding_similarity": 0.971269015428233
+    },
+    {
+      "id": "df-03",
+      "kind": "defect",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 0.0,
+      "field_agreement": 0.0,
+      "field_accuracy_mean": 0.0,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0
+    },
+    {
+      "id": "df-03",
+      "kind": "defect",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.25,
+      "schema_valid_rate": 0.25,
+      "field_agreement": 0.25,
+      "field_accuracy_mean": 0.1875,
+      "field_accuracy_stdev": 0.3247595264191645,
+      "text_similarity": 0.9036461337934325,
+      "embedding_similarity": 0.9427464410521504
+    },
+    {
+      "id": "df-11",
+      "kind": "defect",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.75,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0
+    },
+    {
+      "id": "df-11",
+      "kind": "defect",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.25,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.75,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 0.9046689830199214,
+      "embedding_similarity": 0.9640560063461731
+    },
+    {
+      "id": "pf-03",
+      "kind": "preflight",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 0.75,
+      "schema_valid_rate": 0.0,
+      "field_agreement": 0.0,
+      "field_accuracy_mean": 0.0,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 0.8896396396396397,
+      "embedding_similarity": 0.9765889446057802
+    },
+    {
+      "id": "pf-03",
+      "kind": "preflight",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.25,
+      "schema_valid_rate": 0.75,
+      "field_agreement": 0.59375,
+      "field_accuracy_mean": 0.40625,
+      "field_accuracy_stdev": 0.31093357409581873,
+      "text_similarity": 0.5334979040103921,
+      "embedding_similarity": 0.952119515288357
+    },
+    {
+      "id": "pf-05",
+      "kind": "preflight",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.75,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0000000000000002
+    },
+    {
+      "id": "pf-05",
+      "kind": "preflight",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.75,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0000000000000002
+    },
+    {
+      "id": "pf-13",
+      "kind": "preflight",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 1.0,
+      "field_accuracy_mean": 0.875,
+      "field_accuracy_stdev": 0.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 0.9999999999999997
+    },
+    {
+      "id": "pf-13",
+      "kind": "preflight",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.5,
+      "schema_valid_rate": 1.0,
+      "field_agreement": 0.96875,
+      "field_accuracy_mean": 0.96875,
+      "field_accuracy_stdev": 0.05412658773652741,
+      "text_similarity": 0.9107985436435322,
+      "embedding_similarity": 0.9698574415129967
+    },
+    {
+      "id": "qa-01",
+      "kind": "qa",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 1.0
+    },
+    {
+      "id": "qa-01",
+      "kind": "qa",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.75,
+      "text_similarity": 0.7444444444444445,
+      "embedding_similarity": 0.7955094576928824
+    },
+    {
+      "id": "qa-02",
+      "kind": "qa",
+      "temperature": 0.0,
+      "n": 4,
+      "exact_match_rate": 1.0,
+      "text_similarity": 1.0,
+      "embedding_similarity": 0.9999999999999999
+    },
+    {
+      "id": "qa-02",
+      "kind": "qa",
+      "temperature": 0.7,
+      "n": 4,
+      "exact_match_rate": 0.5,
+      "text_similarity": 0.8664986421272688,
+      "embedding_similarity": 0.8908419085026648
+    }
+  ]
+}
