@@ -56,7 +56,7 @@ class _Base(BaseModel):
 class PreflightReport(_Base):
     """Structured result of a pilot's (messy) pre-flight checklist note."""
 
-    aircraft_id: str | None = Field(description="Aircraft identifier, e.g. UAV-07")
+    aircraft_id: str | None = Field(description="Aircraft identifier, e.g. XY-12")
     battery_pct: int | None = Field(
         default=None,
         ge=0,
