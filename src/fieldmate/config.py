@@ -29,6 +29,11 @@ class Settings:
         default_factory=lambda: _env_float("FIELDMATE_TIMEOUT_S", 300.0)
     )
     num_ctx: int = field(default_factory=lambda: int(os.environ.get("FIELDMATE_NUM_CTX", "2048")))
+    # Low-RAM / shared-host mode: memory-map GGUF weights (page cache, reclaimable) instead of
+    # copying them into process memory. See docs/REPORT.md "What went wrong".
+    use_mmap: bool = field(
+        default_factory=lambda: os.environ.get("FIELDMATE_USE_MMAP", "0").lower() in ("1", "true")
+    )
     max_retries: int = field(
         default_factory=lambda: int(os.environ.get("FIELDMATE_MAX_RETRIES", "1"))
     )

@@ -104,6 +104,8 @@ class OllamaClient:
             "temperature": self.settings.temperature if temperature is None else temperature,
             "num_ctx": self.settings.num_ctx,
         }
+        if self.settings.use_mmap:
+            opts["use_mmap"] = True
         if options:
             opts.update(options)
         return opts
