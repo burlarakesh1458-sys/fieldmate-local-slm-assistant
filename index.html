@@ -1,0 +1,675 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FieldMate · Offline SLM Assistant · Rakesh Burla</title>
+<meta name="description" content="FieldMate · Offline SLM Assistant — AI engineering portfolio project by Rakesh Burla">
+<style>
+:root{--bg:#0b0f17;--card:#121826;--fg:#e6e9ef;--mut:#9aa4b2;--acc:#5eead4;--line:#243044}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 -apple-system,Segoe UI,Inter,Roboto,sans-serif}
+header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0f1625,#0b0f17)}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:22px 0;flex-wrap:wrap}
+.brand{font-weight:700;font-size:1.15rem}.brand small{display:block;color:var(--mut);font-weight:400;font-size:.85rem}
+.btn{display:inline-block;padding:9px 16px;border:1px solid var(--acc);color:var(--acc);border-radius:8px;text-decoration:none;font-weight:600}
+.btn:hover{background:var(--acc);color:#04201b}
+main{padding:28px 0 60px}h1,h2,h3{line-height:1.25}h1{font-size:2rem}h2{margin-top:2.2em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+a{color:var(--acc)}code{background:#1b2333;padding:.1em .35em;border-radius:5px;font-size:.92em}
+pre{background:var(--card);border:1px solid var(--line);padding:14px;border-radius:10px;overflow:auto}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;display:block;overflow-x:auto;margin:1em 0}th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}th{background:var(--card)}
+img{max-width:100%;border-radius:10px;background:#fff}blockquote{border-left:3px solid var(--acc);margin:0;padding:.2em 1em;color:var(--mut)}
+pre.mermaid{background:#fff;color:#000}
+footer{border-top:1px solid var(--line);color:var(--mut);padding:20px 0;font-size:.9rem}
+</style></head><body>
+<header><div class="wrap top"><div class="brand">FieldMate · Offline SLM Assistant<small>AI engineering portfolio · Rakesh Burla</small></div>
+<div><a class="btn" href="https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant">View code on GitHub</a></div></div></header>
+<main class="wrap"><h1
+id="fieldmate-an-offline-drone-ops-assistant-on-small-language-models">FieldMate:
+an offline drone-ops assistant on small language models</h1>
+<p>FieldMate turns a drone pilot's messy field notes into
+<strong>validated JSON</strong> (pre-flight go/no-go checks, maintenance
+defect reports) and answers questions about a fleet log. It runs
+<strong>entirely offline</strong> on small language models (1B to 4B
+parameters) served by <a href="https://ollama.com">Ollama</a>: no API
+key, no network, no data leaving the laptop or ground-station box.</p>
+<p>The repo is also a <strong>benchmark study</strong>. Every number
+below was measured on a 2-vCPU ARM64 machine with no GPU, using the
+harness in <code>src/fieldmate/bench/</code>. Nothing is estimated.</p>
+<blockquote>
+<p>Built by Rakesh Burla (B.Tech Mechanical, RGUKT Basar), who works on
+drones/UAVs. Project 2 of an AI-engineering portfolio: local inference,
+structured output, model selection.</p>
+</blockquote>
+<h2 id="why-offline">Why offline?</h2>
+<p>Drone field teams work where connectivity is bad: agricultural survey
+sites, disaster zones, ranges and campuses with patchy mobile data.
+Flight logs can be sensitive (locations, client sites, defence/aerospace
+work), so sending them to a cloud LLM may not be allowed. At the end of
+a day of flying, a crew has 30 to 100 scribbled notes like:</p>
+<pre><code>pre-flt Q4-ALPHA. prop #3 has a nick on leading edge. batt 88. gps fine. didnt check compass.</code></pre>
+<p>FieldMate turns that into a record the maintenance system can
+trust:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;aircraft_id&quot;</span><span class="fu">:</span> <span class="st">&quot;Q4-ALPHA&quot;</span><span class="fu">,</span> <span class="dt">&quot;battery_pct&quot;</span><span class="fu">:</span> <span class="dv">88</span><span class="fu">,</span> <span class="dt">&quot;propellers&quot;</span><span class="fu">:</span> <span class="st">&quot;issue&quot;</span><span class="fu">,</span> <span class="dt">&quot;motors&quot;</span><span class="fu">:</span> <span class="st">&quot;ok&quot;</span><span class="fu">,</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;gps&quot;</span><span class="fu">:</span> <span class="st">&quot;ok&quot;</span><span class="fu">,</span> <span class="dt">&quot;compass&quot;</span><span class="fu">:</span> <span class="st">&quot;not_checked&quot;</span><span class="fu">,</span> <span class="dt">&quot;weather_ok&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;decision&quot;</span><span class="fu">:</span> <span class="st">&quot;no_go&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;issues&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;nick on leading edge of prop #3&quot;</span><span class="ot">]</span><span class="fu">}</span></span></code></pre></div>
+<p>The model's output is constrained by a JSON schema and validated
+against the ops manual (for example: any propeller issue forces
+<code>no_go</code>; a <code>high</code> or <code>critical</code> defect
+must ground the aircraft). Output that breaks a rule is sent back to the
+model once, with the error, before the call fails gracefully.</p>
+<h2 id="architecture">Architecture</h2>
+<pre class="mermaid">flowchart LR
+    subgraph Client
+      CLI[&quot;fieldmate CLI (Typer)&quot;]
+      HTTP[&quot;HTTP client / ground-station UI&quot;]
+    end
+    subgraph App[&quot;FieldMate (Python 3.12)&quot;]
+      API[&quot;FastAPI\n/health /chat /chat/stream /extract&quot;]
+      EX[&quot;Extractor\nschema → validate → retry once → graceful fail&quot;]
+      SC[&quot;Pydantic v2 schemas\n+ ops-manual rules&quot;]
+      OC[&quot;OllamaClient (httpx)\ntiming metrics, TTFT&quot;]
+      BE[&quot;Bench harness\nperf · quality · temperature · quant&quot;]
+    end
+    subgraph Local[&quot;Local inference (offline)&quot;]
+      OL[&quot;Ollama server&quot;]
+      LS[&quot;llama.cpp runner\nGGUF Q4_K_M / Q5_K_M / Q8_0&quot;]
+    end
+    CLI --&gt; API
+    CLI --&gt; EX
+    HTTP --&gt; API
+    API --&gt; EX --&gt; SC
+    EX --&gt; OC
+    API --&gt; OC
+    BE --&gt; EX
+    BE --&gt; OC
+    OC -- &quot;REST /api/chat\nformat = JSON schema&quot; --&gt; OL --&gt; LS</pre>
+<p>Extraction flow:</p>
+<pre class="mermaid">sequenceDiagram
+    participant U as Caller
+    participant E as Extractor
+    participant O as Ollama
+    participant P as Pydantic
+    U-&gt;&gt;E: extract(kind, note)
+    E-&gt;&gt;O: chat(messages, format=JSON schema, T=0)
+    O--&gt;&gt;E: JSON (grammar-constrained)
+    E-&gt;&gt;P: model_validate(json)
+    alt valid
+        P--&gt;&gt;U: ok=true, data
+    else schema/rule violation
+        E-&gt;&gt;O: retry: previous output + &quot;failed validation: &lt;errors&gt;&quot;
+        O--&gt;&gt;E: corrected JSON
+        E-&gt;&gt;P: model_validate(json)
+        P--&gt;&gt;U: ok=true, or ok=false with errors (no exception)
+    end</pre>
+<h2 id="results-measured-2-vcpu-arm64-no-gpu">Results (measured, 2-vCPU
+ARM64, no GPU)</h2>
+<p>All tables are generated by <code>scripts/make_tables.py</code> from
+the raw files in <code>results/</code>; the full set, including
+per-field accuracy, is in <a
+href="https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant/blob/main/docs/RESULTS_TABLES.md"><code>docs/RESULTS_TABLES.md</code></a>
+and the analysis in <a
+href="https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant/blob/main/docs/REPORT.md"><code>docs/REPORT.md</code></a>. The host was
+shared with other jobs, so each table shows the 1-minute load average
+next to the numbers.</p>
+<h3 id="speed-5-warm-runs-per-prompt-type-128-token-cap-t0">Speed (5
+warm runs per prompt type, 128-token cap, T=0)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Decode tok/s</th>
+<th>TTFT chat p50 (s)</th>
+<th>TTFT extraction mean (s)</th>
+<th>Extraction latency p50 / p95 (s)</th>
+<th>Cold load (s)</th>
+<th>Peak RSS (GiB)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>llama3.2:1b</code> (Q8_0)</td>
+<td><strong>22.5</strong></td>
+<td><strong>1.98</strong></td>
+<td><strong>3.1</strong></td>
+<td><strong>5.9 / 6.1</strong></td>
+<td>16.8</td>
+<td><strong>1.73</strong></td>
+</tr>
+<tr class="even">
+<td><code>qwen2.5:3b</code> (Q4_K_M)</td>
+<td>12.6</td>
+<td>6.08</td>
+<td>9.8</td>
+<td>13.8 / 15.0</td>
+<td>33.1</td>
+<td>2.28</td>
+</tr>
+<tr class="odd">
+<td><code>llama3.2:3b</code> (Q4_K_M)</td>
+<td>10.4</td>
+<td>6.14</td>
+<td>13.1</td>
+<td>15.2 / 41.5</td>
+<td>37.4</td>
+<td>2.58</td>
+</tr>
+<tr class="even">
+<td><code>phi4-mini</code> 3.8B (Q4_K_M)</td>
+<td>9.0</td>
+<td>7.39</td>
+<td>12.6</td>
+<td>19.3 / 21.4</td>
+<td>49.5</td>
+<td>3.23</td>
+</tr>
+</tbody>
+</table>
+<p><img src="docs/charts/perf.png" alt="speed" /></p>
+<h3
+id="quality-on-the-42-item-test-set-t0-schema-constrained-1-retry">Quality
+on the 42-item test set (T=0, schema-constrained, 1 retry)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Valid 1st try</th>
+<th>Valid after retry</th>
+<th>Field accuracy</th>
+<th>Go/No-go</th>
+<th>Defect severity</th>
+<th>Q&amp;A rubric</th>
+<th>p50 s/item</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>llama3.2:1b</code></td>
+<td>97.2%</td>
+<td>100%</td>
+<td>61.8%</td>
+<td>80.0%</td>
+<td>18.8%</td>
+<td>58.3%</td>
+<td><strong>3.7</strong></td>
+</tr>
+<tr class="even">
+<td><code>qwen2.5:3b</code></td>
+<td>94.4%</td>
+<td>100%</td>
+<td><strong>85.8%</strong></td>
+<td><strong>95.0%</strong></td>
+<td>62.5%</td>
+<td>91.7%</td>
+<td>7.3</td>
+</tr>
+<tr class="odd">
+<td><code>llama3.2:3b</code></td>
+<td>86.1%</td>
+<td>100%</td>
+<td>77.4%</td>
+<td><strong>95.0%</strong></td>
+<td>62.5%</td>
+<td><strong>100%</strong></td>
+<td>7.5</td>
+</tr>
+<tr class="even">
+<td><code>phi4-mini</code></td>
+<td>97.2%</td>
+<td>100%</td>
+<td>78.8%</td>
+<td><strong>95.0%</strong></td>
+<td><strong>68.8%</strong></td>
+<td><strong>100%</strong></td>
+<td>11.1</td>
+</tr>
+</tbody>
+</table>
+<p><img src="docs/charts/quality.png" alt="quality" /> <img
+src="docs/charts/model_tradeoff.png" alt="trade-off" /></p>
+<p><strong>Every model produced 100% schema-valid output after at most
+one retry</strong> (36 extraction items each, 144 extractions in total).
+Validity is not the hard part; getting the <em>fields</em> right is.
+<code>qwen2.5:3b</code> is the best extractor (85.8% field accuracy, +24
+points over the 1B model) at half the latency of <code>phi4-mini</code>.
+<code>llama3.2:3b</code> and <code>phi4-mini</code> answer fleet-log
+questions perfectly but mis-copy aircraft ids on defect notes
+(62.5%).</p>
+<h3
+id="temperature-same-8-prompts-x-4-runs-llama323b-no-retry">Temperature:
+same 8 prompts x 4 runs (<code>llama3.2:3b</code>, no retry)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>T=0</th>
+<th>T=0.7</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Identical outputs, extraction</td>
+<td>95.8%</td>
+<td>41.7%</td>
+</tr>
+<tr class="even">
+<td>Identical outputs, Q&amp;A</td>
+<td>100%</td>
+<td>62.5%</td>
+</tr>
+<tr class="odd">
+<td>Field-accuracy std-dev across runs</td>
+<td>0.000</td>
+<td>0.151</td>
+</tr>
+<tr class="even">
+<td>Pairwise text similarity, Q&amp;A</td>
+<td>1.000</td>
+<td>0.805</td>
+</tr>
+<tr class="odd">
+<td>Embedding similarity, Q&amp;A (all-minilm)</td>
+<td>1.000</td>
+<td>0.843</td>
+</tr>
+<tr class="even">
+<td>Schema-valid without retry</td>
+<td>66.7%</td>
+<td>79.2%</td>
+</tr>
+</tbody>
+</table>
+<p><img src="docs/charts/temperature.png" alt="temperature" /></p>
+<p>At T=0 the model gave the same answer almost every time (31 of 32
+runs matched the most common output; the one exception, on one note, is
+most likely llama.cpp prompt-cache/batching non-determinism), and its
+mistakes were just as repeatable: two of the six notes failed validation
+on all four runs. At T=0.7 only 42% of extraction runs matched and field
+accuracy swung by 0.15 (std-dev) from run to run. T=0.7 scored slightly
+higher here (79% vs 67% valid without retry) because sampling sometimes
+escaped the repeatable mistakes, but on 6 notes that is noise, and the
+retry loop fixes those cases at T=0 (100% valid). Extraction stays at
+T=0 for reproducible records.</p>
+<h3
+id="constrained-vs-unconstrained-decoding-llama321b-all-42-items">Constrained
+vs unconstrained decoding (<code>llama3.2:1b</code>, all 42 items)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Decoding</th>
+<th>Valid 1st try</th>
+<th>Valid after retry</th>
+<th>Field accuracy</th>
+<th>Go/No-go</th>
+<th>p50 s/item</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>JSON schema as <code>format</code> (grammar)</td>
+<td><strong>97.2%</strong></td>
+<td><strong>100%</strong></td>
+<td><strong>61.8%</strong></td>
+<td><strong>80.0%</strong></td>
+<td><strong>3.7</strong></td>
+</tr>
+<tr class="even">
+<td><code>format="json"</code>, schema only in the prompt</td>
+<td>47.2%</td>
+<td>69.4%</td>
+<td>51.0%</td>
+<td>60.0%</td>
+<td>7.8</td>
+</tr>
+</tbody>
+</table>
+<p>Without the grammar, 53% of extractions needed the retry and 31%
+still failed (wrong enum values such as <code>component</code>,
+<code>issues</code> as a string, ops-rule violations), and the retries
+doubled the median latency. One twist: on the 25 outputs that
+<em>were</em> valid, the unconstrained model got 73.5% of fields right
+and read the battery level correctly 15 times out of 15, while the
+constrained model returned <code>null</code> battery on 20 of 20
+pre-flight notes. The grammar guarantees shape, but it also makes "null"
+the easiest path for a tiny model (see the report).</p>
+<h3 id="quantization-llama321b-same-42-items">Quantization
+(<code>llama3.2:1b</code>, same 42 items)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Build</th>
+<th>File size</th>
+<th>Peak RSS (GiB)</th>
+<th>Decode tok/s (host load)</th>
+<th>Field accuracy</th>
+<th>Go/No-go</th>
+<th>Q&amp;A rubric (6 items)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q4_K_M</td>
+<td>770 MiB</td>
+<td><strong>1.19</strong></td>
+<td><strong>30.1</strong> (2.1)</td>
+<td>60.1%</td>
+<td>80.0%</td>
+<td>25.0%</td>
+</tr>
+<tr class="even">
+<td>Q5_K_M</td>
+<td>869 MiB</td>
+<td>1.29</td>
+<td>13.9 (4.4)</td>
+<td>61.8%</td>
+<td>75.0%</td>
+<td>33.3%</td>
+</tr>
+<tr class="odd">
+<td>Q8_0</td>
+<td>1,259 MiB</td>
+<td>1.72</td>
+<td>22.5 (0.3) / 14.4 (5.9)</td>
+<td>61.8%</td>
+<td>80.0%</td>
+<td>58.3%</td>
+</tr>
+</tbody>
+</table>
+<p>Q4_K_M uses <strong>31% less RAM</strong> than Q8_0 and lost
+<strong>1.7 points</strong> of field accuracy; Q5_K_M lost nothing on
+extraction. The free-text Q&amp;A answers degraded much more (58% to 25%
+of rubric facts), though on only 6 questions. Speed numbers are
+confounded by the shared host (the load average is in brackets): Q4_K_M
+at load 2.1 still decoded 34% faster than Q8_0 at load 0.3. Re-running
+Q8_0 reproduced all 36 extraction outputs of the main study exactly, so
+T=0 accuracy is reproducible.</p>
+<p><img src="docs/charts/quant_tradeoff.png" alt="quantization" /></p>
+<h3 id="which-model-should-a-field-team-run">Which model should a field
+team run?</h3>
+<ul>
+<li><strong>Default: <code>qwen2.5:3b</code></strong> (now the FieldMate
+default). Best field accuracy (85.8%), 95% go/no-go, 2.3 GiB RAM, about
+7 s per note on 2 CPU cores.</li>
+<li><strong>Q&amp;A-heavy use: <code>phi4-mini</code> or
+<code>llama3.2:3b</code></strong>: 100% on the fleet-log questions, but
+more RAM (3.2 / 2.6 GiB) and weaker on aircraft ids in defect
+notes.</li>
+<li><strong><code>llama3.2:1b</code></strong> only on boards with under
+2 GiB free, and only with a human reviewing every no-go decision: it
+gets one go/no-go call in five wrong.</li>
+<li><strong><code>mistral:7b</code> was not benchmarked.</strong> Its
+4.1 GB of weights plus KV cache did not fit next to the other workloads
+on the 7.8 GiB, swap-less box; this is recorded as an exclusion, not a
+result.</li>
+</ul>
+<h2 id="features">Features</h2>
+<table>
+<tbody>
+<tr class="odd">
+<td><strong>Offline inference</strong></td>
+<td>Ollama + GGUF small language models, CPU only. httpx client with
+<code>trust_env=False</code>, so local traffic never goes through a
+proxy.</td>
+</tr>
+<tr class="even">
+<td><strong>Structured extraction</strong></td>
+<td><code>PreflightReport</code> and <code>DefectReport</code> Pydantic
+v2 schemas. The JSON schema is passed as Ollama <code>format</code>, so
+decoding is grammar-constrained.</td>
+</tr>
+<tr class="odd">
+<td><strong>Ops-manual validation</strong></td>
+<td>Rules no grammar can express, written as
+<code>model_validator</code>s: no-go on any issue, battery below 30% or
+bad weather; high/critical defects ground the aircraft.</td>
+</tr>
+<tr class="even">
+<td><strong>Retry with error feedback</strong></td>
+<td>On a parse or validation error the model sees its own output plus
+the exact Pydantic errors, and gets <strong>one</strong> retry. After
+that <code>ok=false</code> is returned: no exception, no crash.</td>
+</tr>
+<tr class="odd">
+<td><strong>Grounded Q&amp;A</strong></td>
+<td><code>/chat</code> answers from a fleet log you pass in, and says
+"not in the log" otherwise.</td>
+</tr>
+<tr class="even">
+<td><strong>Streaming</strong></td>
+<td><code>/chat/stream</code> (NDJSON) and the CLI print tokens as they
+arrive. Client-side TTFT is measured.</td>
+</tr>
+<tr class="odd">
+<td><strong>Benchmark suite</strong></td>
+<td>Perf (TTFT, tok/s, p50/p95 latency, peak RSS), quality (validity,
+field accuracy, rubric), temperature variance, a constrained-decoding
+ablation and a quantization study. Runs are resumable and wait for free
+RAM.</td>
+</tr>
+<tr class="even">
+<td><strong>Ops-ready</strong></td>
+<td>Typer CLI, FastAPI with OpenAPI docs, Dockerfile, docker-compose
+(app + ollama + model-init), Makefile, ruff, a pytest suite that runs
+offline.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quickstart">Quickstart</h2>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Ollama + a model (once, needs internet; fully offline afterwards)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://ollama.com/install.sh <span class="kw">|</span> <span class="fu">sh</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> serve <span class="kw">&amp;</span>                      <span class="co"># or the desktop app</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen2.5:3b</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. FieldMate</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv .venv <span class="kw">&amp;&amp;</span> <span class="bu">source</span> .venv/bin/activate</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> dev                            <span class="co"># pinned deps + editable install</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> health</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Use it</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> extract preflight <span class="st">&quot;uav-07 batt 92%, props ok, gps 14 sats, compass ok, motors ok, wind 8 km/h&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> extract defect <span class="st">&quot;AERO-2 battery pack B3 puffed up a bit after charge, smells weird&quot;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> chat <span class="st">&quot;Which aircraft are grounded?&quot;</span> <span class="at">--context</span> examples/fleet_log.txt <span class="at">--stats</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. API</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> serve                     <span class="co"># http://127.0.0.1:8000/docs</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8000/extract <span class="at">-H</span> <span class="st">&#39;content-type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;kind&quot;:&quot;defect&quot;,&quot;text&quot;:&quot;UAV-03 hairline crack at base of rear right arm&quot;}&#39;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-N</span> localhost:8000/chat/stream <span class="at">-H</span> <span class="st">&#39;content-type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;message&quot;:&quot;How should a swollen LiPo be handled?&quot;}&#39;</span></span></code></pre></div>
+<p>Docker (app + Ollama + one-shot model pull):</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up <span class="at">-d</span> <span class="at">--build</span>        <span class="co"># FIELDMATE_MODEL=qwen2.5:3b by default</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> localhost:8000/health</span></code></pre></div>
+<p>Configuration (environment variables): <code>OLLAMA_HOST</code>
+(default <code>http://127.0.0.1:11434</code>),
+<code>FIELDMATE_MODEL</code> (default <code>qwen2.5:3b</code>),
+<code>FIELDMATE_TEMPERATURE</code> (0), <code>FIELDMATE_NUM_CTX</code>
+(2048), <code>FIELDMATE_MAX_RETRIES</code> (1),
+<code>FIELDMATE_TIMEOUT_S</code> (300), <code>FIELDMATE_USE_MMAP</code>
+(0).</p>
+<h3 id="api">API</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Path</th>
+<th>Body</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GET</td>
+<td><code>/health</code></td>
+<td></td>
+<td>Ollama version, local models, whether the default model is present
+(503 if Ollama is down)</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/chat</code></td>
+<td><code>{message, context?, model?, temperature?}</code></td>
+<td><code>{answer, model, metrics}</code></td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/chat/stream</code></td>
+<td>same</td>
+<td>NDJSON: <code>{"delta": ...}</code> lines, then
+<code>{"done": true, "metrics": {...}}</code></td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/extract</code></td>
+<td><code>{kind: preflight|defect, text, model?, temperature?}</code></td>
+<td><code>ExtractionResult</code>: <code>ok</code>, <code>data</code>,
+every attempt with its raw output, error and timings</td>
+</tr>
+</tbody>
+</table>
+<p><code>/extract</code> returns <strong>200 with
+<code>ok=false</code></strong> when the model cannot produce valid
+output after the retry (the caller decides what to do next, such as
+sending the note to a human), and <strong>502</strong> only when Ollama
+itself is unreachable.</p>
+<h3 id="reproduce-the-benchmarks">Reproduce the benchmarks</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> pull                           <span class="co"># models used below + all-minilm for embeddings</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench                          <span class="co"># or: scripts/run_benchmarks.sh (RAM-gated, resumable)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/make_tables.py <span class="op">&gt;</span> docs/RESULTS_TABLES.md</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">fieldmate</span> bench charts</span></code></pre></div>
+<h2 id="repository-layout">Repository layout</h2>
+<pre><code>src/fieldmate/
+  client.py        Ollama REST client: chat, stream (TTFT), embed, unload; timing metrics
+  schemas.py       Pydantic v2 contracts + ops-manual validators
+  prompts.py       system prompts, field specs, repair prompt
+  extractor.py     constrained generation -&gt; validate -&gt; 1 retry -&gt; graceful failure
+  api.py / cli.py  FastAPI service and Typer CLI
+  bench/           perf.py, quality.py, temperature.py, scoring.py, charts.py, common.py
+data/testset.jsonl 42 hand-labelled items (20 pre-flight, 16 defect, 6 fleet-log Q&amp;A)
+results/           raw per-run JSONL + summaries (committed, so every number can be audited)
+docs/REPORT.md     technical report;  docs/charts/*.png
+scripts/           run_benchmarks.sh, wait_for_memory.py, make_tables.py
+tests/             36 offline tests (httpx.MockTransport fake Ollama)</code></pre>
+<h2 id="design-decisions">Design decisions</h2>
+<ul>
+<li><strong>Grammar-constrained decoding first, validation
+second.</strong> Ollama's <code>format</code> accepts a JSON schema and
+turns it into a llama.cpp grammar, so the model <em>cannot</em> emit a
+missing brace or an unknown enum value. Pydantic then checks what no
+grammar can express (the ops-manual rules). The ablation below measures
+what the schema constraint is worth on its own.</li>
+<li><strong>One retry, then fail gracefully.</strong> A second retry
+rarely helps a small model and doubles the worst-case latency on a CPU
+box. <code>ok=false</code> plus the raw attempts lets the caller route
+the note to a human instead of crashing a batch job.</li>
+<li><strong>T=0 and a fixed seed for extraction.</strong> Field records
+have to be reproducible; the temperature study shows what T=0.7
+costs.</li>
+<li><strong><code>num_ctx=2048</code>, one loaded model, one
+slot.</strong> On a 7.8 GiB box without swap, KV-cache RAM matters more
+than long context. Every prompt in the test set fits in 2048
+tokens.</li>
+<li><strong>No example values in prompts.</strong> Tiny models copy them
+(see "What went wrong").</li>
+<li><strong>httpx with <code>trust_env=False</code>.</strong> Local
+inference traffic never touches a proxy.</li>
+<li><strong>Everything resumable and RAM-gated.</strong> Results are
+appended row by row; a model only loads when three readings in a row
+show enough free RAM. On a shared edge box this is what made the study
+finish at all.</li>
+<li><strong>Committed raw results.</strong> <code>results/*.jsonl</code>
+holds every model output, so every table can be audited and regenerated
+with <code>scripts/make_tables.py</code>.</li>
+</ul>
+<h2 id="what-went-wrong-and-the-fixes">What went wrong, and the
+fixes</h2>
+<ol type="1">
+<li><strong>The runner was OOM-killed on a shared 7.8 GiB box.</strong>
+Ollama on CPU turns mmap <em>off</em> and copies the weights into
+process memory, and llama.cpp's ARM weight repacking makes another
+resident copy. <code>llama3.2:1b</code> (Q8_0, 1.3 GB on disk) reached
+1.7 GB anonymous RSS, and the kernel log shows
+<code>Out of memory: Killed process ... (llama-server)</code>. Other
+jobs on the box held up to 5 GiB of RAM-backed <code>/tmp</code>, so
+free memory moved between 0.1 and 2.9 GiB from minute to minute.
+<em>Fixes:</em> (a) <code>scripts/wait_for_memory.py</code> only loads a
+model after three readings in a row, 10 s apart, show enough free RAM
+for it (one good reading was not enough: a load passed the gate at 2.9
+GiB and was still killed); (b) a circuit breaker stops a model's run
+after two Ollama errors in a row instead of writing 42 rows of failures;
+(c) every result row is appended to JSONL as soon as it exists, so a run
+that gets killed resumes where it stopped; (d)
+<code>LLAMA_ARG_CACHE_RAM=0</code> turns off llama-server's 8 GiB host
+prompt cache.</li>
+<li><strong>mmap is not a free lunch.</strong> I tried
+<code>use_mmap=true</code> with repacking off, so the weights live in
+reclaimable page cache. Under memory pressure the kernel kept evicting
+them and re-reading them over the network filesystem: about 1 token/s,
+and a 284-token prompt took minutes to pre-fill. The mode stays
+available as <code>FIELDMATE_USE_MMAP=1</code> for hosts that have the
+RAM, but it is off by default. Lesson: on an edge box, budget RAM for
+the whole model plus about 0.5 GiB. Do not count on paging.</li>
+<li><strong>The 1B model copied the example from the prompt.</strong>
+The first system prompt said "Aircraft IDs are upper-case like UAV-07".
+<code>llama3.2:1b</code> then labelled a Q4-ALPHA note as UAV-07. I
+changed the example to <code>XY-12</code>, and the model wrote
+<code>XY-12</code> for every defect. <em>Fix:</em> no example values in
+prompts for tiny models. The instruction now says "copy the aircraft ID
+from the note". Both prompt versions are in git history.</li>
+<li><strong>Local traffic went through a proxy.</strong> The sandbox
+sets <code>HTTP(S)_PROXY</code>, and httpx honours it by default, so
+requests to <code>127.0.0.1:11434</code> came back empty. <em>Fix:</em>
+the client uses <code>trust_env=False</code>. An offline tool should
+never send local inference traffic through a proxy.</li>
+<li><strong>Identical prompts made TTFT look too good.</strong> In early
+runs every warm request reused the first one's KV cache (prefill showed
+about 1,000 tok/s). <em>Fix:</em> each warm run now uses a different
+question or note, so only the shared system prompt is cached, as in real
+use.</li>
+<li><strong><code>pgrep -f</code> killed my own shell.</strong>
+Housekeeping scripts that matched on the command line also matched the
+shell running them. <code>scripts/</code> now matches on exact process
+names. A small thing, but it cost several reruns.</li>
+<li><strong>The RAM gate waited for memory the previous model was
+holding.</strong> With <code>keep_alive=30m</code>,
+<code>phi4-mini</code>'s runner (3.3 GB resident) stayed loaded after
+its quality run, so the gate for the next model (needs 2.7 GiB free) saw
+about 2.7 GiB and kept waiting, while the box sat idle. <em>Fix:</em>
+<code>scripts/wait_for_memory.py</code> now asks Ollama to unload any
+resident model (<code>keep_alive: 0</code>) before it starts counting
+free RAM.</li>
+<li><strong>Nullable fields became an escape hatch.</strong> The schema
+allows <code>battery_pct</code> and <code>weather_ok</code> to be
+<code>null</code> ("not stated"). Under grammar-constrained decoding the
+models, above all the 1B one, often chose <code>null</code> even when
+the note said "batt 88": <code>llama3.2:1b</code> returned
+<code>null</code> battery on 20 of 20 pre-flight notes. This was found
+by the per-field table, not by the headline validity number (100% valid
+after retry). It is reported as measured, not fixed after the fact; see
+future work.</li>
+</ol>
+<h2 id="future-work">Future work</h2>
+<ul>
+<li>Fine-tune (LoRA) a 1B model on synthetic pilot notes so the smallest
+model closes the accuracy gap with the 3B models; distil from a larger
+model's outputs.</li>
+<li>Run the same harness on real edge hardware (Raspberry Pi 5, Jetson
+Orin Nano) and with GPU offload, without other jobs sharing the
+CPU.</li>
+<li>Add <code>mistral:7b</code> and other 7-8B models on a machine with
+more than 8 GiB of RAM (excluded here: 4.1 GB of weights plus KV cache
+did not fit next to the other workloads on the box).</li>
+<li>Grow the test set past 42 items, add inter-annotator labels, and
+report confidence intervals.</li>
+<li>Speculative decoding (1B draft for a 3B target) to cut latency on
+CPU.</li>
+<li>A small offline UI for the ground station and a sync queue for when
+connectivity returns.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT, see <a href="https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant/blob/main/LICENSE">LICENSE</a>.</p>
+</main>
+<footer><div class="wrap">© 2026 Rakesh Burla · MIT License · <a href="https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant">https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant</a></div></footer>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true,theme:"default"});</script>
+</body></html>
