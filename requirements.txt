@@ -1,0 +1,7 @@
+# Runtime (pinned; mirrors pyproject.toml)
+fastapi==0.162.0
+uvicorn==0.54.0
+typer==0.27.3
+httpx==0.28.1
+pydantic==2.14.3
+psutil==7.2.2

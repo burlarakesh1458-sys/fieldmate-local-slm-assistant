@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+.env
+# model weights never belong in git
+*.gguf
+ollama-models/
+.DS_Store
+src/*.egg-info/
