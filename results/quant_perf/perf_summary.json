@@ -1,0 +1,397 @@
+{
+  "runs_per_prompt": 5,
+  "max_tokens": 128,
+  "llama3.2:1b-instruct-q4_K_M": {
+    "load_avg_1m_during": {
+      "n": 0
+    },
+    "cold_load_s": 3.481,
+    "cold_ttft_s": 5.882,
+    "peak_rss_mb": 1222.3,
+    "chat": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 30.1149,
+        "p50": 29.4618,
+        "p95": 32.3935,
+        "min": 27.5088,
+        "max": 32.5836,
+        "stdev": 2.0091
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 862.6009,
+        "p50": 125.8019,
+        "p95": 3105.494,
+        "min": 81.408,
+        "max": 3849.0208,
+        "stdev": 1669.5806
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 2.0454,
+        "p50": 2.2513,
+        "p95": 3.2337,
+        "min": 0.0906,
+        "max": 3.4788,
+        "stdev": 1.222
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 3.1556,
+        "p50": 3.887,
+        "p95": 4.5653,
+        "min": 0.5146,
+        "max": 4.7031,
+        "stdev": 1.6498
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 32.6,
+        "p50": 16.0,
+        "p95": 66.6,
+        "min": 14,
+        "max": 72,
+        "stdev": 25.5108
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 282.2,
+        "p50": 282.0,
+        "p95": 283.6,
+        "min": 281,
+        "max": 284,
+        "stdev": 1.0954
+      }
+    },
+    "extract": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 23.6071,
+        "p50": 22.2415,
+        "p95": 30.1827,
+        "min": 14.3092,
+        "max": 30.3109,
+        "stdev": 6.6037
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 117.9092,
+        "p50": 120.6368,
+        "p95": 121.5577,
+        "min": 106.072,
+        "max": 121.7219,
+        "stdev": 6.64
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 3.5579,
+        "p50": 3.4723,
+        "p95": 3.8364,
+        "min": 3.437,
+        "max": 3.9206,
+        "stdev": 0.204
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 6.2008,
+        "p50": 6.2383,
+        "p95": 6.8533,
+        "min": 5.558,
+        "max": 6.9544,
+        "stdev": 0.5481
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 59.0,
+        "p50": 61.0,
+        "p95": 63.8,
+        "min": 50,
+        "max": 64,
+        "stdev": 5.7009
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 417.2,
+        "p50": 417.0,
+        "p95": 420.4,
+        "min": 415,
+        "max": 421,
+        "stdev": 2.49
+      }
+    },
+    "hardware": {
+      "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "python": "3.12.15",
+      "cpu_count_logical": 2,
+      "ram_total_gb": 8.33,
+      "ram_available_gb_at_start": 5.47,
+      "load_avg_1m_at_start": 2.05,
+      "gpu": "none",
+      "timestamp_utc": "2026-11-06T05:53:05Z"
+    }
+  },
+  "llama3.2:1b-instruct-q5_K_M": {
+    "load_avg_1m_during": {
+      "n": 0
+    },
+    "cold_load_s": 3.159,
+    "cold_ttft_s": 7.791,
+    "peak_rss_mb": 1321.1,
+    "chat": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 13.9447,
+        "p50": 14.2237,
+        "p95": 16.8271,
+        "min": 11.6009,
+        "max": 17.4321,
+        "stdev": 2.3184
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 946.0174,
+        "p50": 62.8033,
+        "p95": 3597.5911,
+        "min": 54.7502,
+        "max": 4478.9301,
+        "stdev": 1974.9681
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 3.662,
+        "p50": 4.5013,
+        "p95": 5.0629,
+        "min": 0.0733,
+        "max": 5.1685,
+        "stdev": 2.0543
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 7.9185,
+        "p50": 7.2302,
+        "p95": 10.5909,
+        "min": 5.0509,
+        "max": 10.6046,
+        "stdev": 2.5406
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 56.8,
+        "p50": 60.0,
+        "p95": 82.8,
+        "min": 32,
+        "max": 86,
+        "stdev": 22.8298
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 282.2,
+        "p50": 282.0,
+        "p95": 283.6,
+        "min": 281,
+        "max": 284,
+        "stdev": 1.0954
+      }
+    },
+    "extract": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 13.5243,
+        "p50": 15.2383,
+        "p95": 18.7119,
+        "min": 6.4478,
+        "max": 19.1537,
+        "stdev": 5.2441
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 64.9975,
+        "p50": 68.08,
+        "p95": 76.2901,
+        "min": 46.0934,
+        "max": 77.5005,
+        "stdev": 11.9856
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 6.6443,
+        "p50": 6.1518,
+        "p95": 8.5608,
+        "min": 5.4437,
+        "max": 9.0156,
+        "stdev": 1.407
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 12.0112,
+        "p50": 12.6908,
+        "p95": 15.3264,
+        "min": 9.1049,
+        "max": 15.9227,
+        "stdev": 2.8245
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 61.8,
+        "p50": 62.0,
+        "p95": 66.2,
+        "min": 56,
+        "max": 67,
+        "stdev": 3.9623
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 417.2,
+        "p50": 417.0,
+        "p95": 420.4,
+        "min": 415,
+        "max": 421,
+        "stdev": 2.49
+      }
+    },
+    "hardware": {
+      "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "python": "3.12.15",
+      "cpu_count_logical": 2,
+      "ram_total_gb": 8.33,
+      "ram_available_gb_at_start": 5.16,
+      "load_avg_1m_at_start": 4.43,
+      "gpu": "none",
+      "timestamp_utc": "2026-11-06T05:58:25Z"
+    }
+  },
+  "llama3.2:1b-instruct-q8_0": {
+    "load_avg_1m_during": {
+      "n": 0
+    },
+    "cold_load_s": 21.202,
+    "cold_ttft_s": 25.399,
+    "peak_rss_mb": 1763.3,
+    "chat": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 14.3995,
+        "p50": 14.8342,
+        "p95": 18.956,
+        "min": 9.1555,
+        "max": 19.5852,
+        "stdev": 4.018
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 129.0068,
+        "p50": 96.411,
+        "p95": 243.9779,
+        "min": 74.0143,
+        "max": 276.448,
+        "stdev": 83.7672
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 2.8157,
+        "p50": 2.9272,
+        "p95": 3.7383,
+        "min": 1.4666,
+        "max": 3.831,
+        "stdev": 0.905
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 7.0066,
+        "p50": 6.8627,
+        "p95": 10.7998,
+        "min": 2.4036,
+        "max": 11.021,
+        "stdev": 3.5538
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 57.8,
+        "p50": 46.0,
+        "p95": 99.4,
+        "min": 14,
+        "max": 100,
+        "stdev": 38.8613
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 282.2,
+        "p50": 282.0,
+        "p95": 283.6,
+        "min": 281,
+        "max": 284,
+        "stdev": 1.0954
+      }
+    },
+    "extract": {
+      "decode_tok_s": {
+        "n": 5,
+        "mean": 11.3877,
+        "p50": 10.9115,
+        "p95": 18.4123,
+        "min": 5.7803,
+        "max": 20.2821,
+        "stdev": 5.3976
+      },
+      "prefill_tok_s": {
+        "n": 5,
+        "mean": 76.5107,
+        "p50": 84.6289,
+        "p95": 105.7685,
+        "min": 41.9301,
+        "max": 110.5117,
+        "stdev": 26.6517
+      },
+      "ttft_s": {
+        "n": 5,
+        "mean": 6.1284,
+        "p50": 4.958,
+        "p95": 9.3728,
+        "min": 3.8224,
+        "max": 9.9428,
+        "stdev": 2.4426
+      },
+      "latency_s": {
+        "n": 5,
+        "mean": 12.2509,
+        "p50": 10.521,
+        "p95": 16.758,
+        "min": 8.064,
+        "max": 16.7799,
+        "stdev": 4.1761
+      },
+      "output_tokens": {
+        "n": 5,
+        "mean": 60.2,
+        "p50": 61.0,
+        "p95": 62.8,
+        "min": 56,
+        "max": 63,
+        "stdev": 2.7749
+      },
+      "prompt_tokens": {
+        "n": 5,
+        "mean": 417.2,
+        "p50": 417.0,
+        "p95": 420.4,
+        "min": 415,
+        "max": 421,
+        "stdev": 2.49
+      }
+    },
+    "hardware": {
+      "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "python": "3.12.15",
+      "cpu_count_logical": 2,
+      "ram_total_gb": 8.33,
+      "ram_available_gb_at_start": 4.53,
+      "load_avg_1m_at_start": 5.92,
+      "gpu": "none",
+      "timestamp_utc": "2026-11-06T06:09:12Z"
+    }
+  }
+}

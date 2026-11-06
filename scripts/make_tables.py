@@ -142,7 +142,7 @@ Q8 = "llama3.2:1b (Q8_0)"
 def quant_perf_table() -> str:
     qp = load("quant_perf/perf_summary.json")
     if any("q8_0" in k for k in models_of(qp)):  # Q8_0 re-measured back to back with Q4/Q5
-        return perf_table(qp, "Quantization study - speed (all three back to back)")
+        return perf_table(qp, "Quantization study - speed (back to back; see load column)")
     return perf_table(
         with_base(qp, load("perf_summary.json"), Q8),
         "Quantization study - speed (Q8_0 row from the main perf run)",
@@ -159,7 +159,10 @@ def main() -> None:
         temperature_table(),
         quality_table(
             with_base(
-                load("ablation_unconstrained_summary.json"),
+                {
+                    f"{k} (format=json, no schema)": v
+                    for k, v in load("ablation_unconstrained_summary.json").items()
+                },
                 load("quality_summary.json"),
                 "llama3.2:1b (schema-constrained, main study)",
             ),
@@ -169,10 +172,7 @@ def main() -> None:
             with_base(load("quant_summary.json"), load("quality_summary.json"), Q8),
             "Quantization study - quality",
         ),
-        perf_table(
-            with_base(load("quant_perf/perf_summary.json"), load("perf_summary.json"), Q8),
-            "Quantization study - speed (Q8_0 row from the main perf run)",
-        ),
+        quant_perf_table(),
     ]
     sys.stdout.write("\n".join(p for p in parts if p))
 

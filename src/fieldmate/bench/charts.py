@@ -143,6 +143,10 @@ def tradeoff_chart(results: Path, out: Path, tag: str, title: str, fname: str) -
     def ram_mb(m: str) -> float:
         return (rss.get(m) or {}).get("peak_rss_mb") or s[m].get("peak_rss_mb", 500)
 
+    def load_of(m: str) -> str:
+        mean = (s[m].get("load_avg_1m_during") or {}).get("mean")
+        return "?" if mean is None else f"{mean:.1f}"
+
     fig, ax = plt.subplots(figsize=(7, 4.5))
     for i, m in enumerate(models):
         x = s[m]["latency_s"]["p50"]
@@ -150,7 +154,7 @@ def tradeoff_chart(results: Path, out: Path, tag: str, title: str, fname: str) -
         size = max(ram_mb(m) / 6, 40)
         ax.scatter(x, y, s=size, color=COLORS[i % len(COLORS)], alpha=0.75, label=m)
         ax.annotate(
-            f"{m}\n{ram_mb(m) / 1024:.1f} GiB",
+            f"{m}\n{ram_mb(m) / 1024:.1f} GiB, host load {load_of(m)}",
             (x, y),
             textcoords="offset points",
             xytext=(8, -4),

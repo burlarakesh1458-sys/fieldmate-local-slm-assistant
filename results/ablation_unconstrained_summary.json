@@ -1,0 +1,72 @@
+{
+  "llama3.2:1b": {
+    "n_items": 42,
+    "n_extraction": 36,
+    "n_qa": 6,
+    "schema_valid_first_try": 0.4722,
+    "schema_valid_after_retry": 0.6944,
+    "retry_rate": 0.5278,
+    "field_accuracy": 0.5104,
+    "field_accuracy_preflight": 0.6188,
+    "per_field_preflight": {
+      "aircraft_id": 0.7,
+      "battery_pct": 0.75,
+      "propellers": 0.6,
+      "motors": 0.6,
+      "gps": 0.5,
+      "compass": 0.55,
+      "weather_ok": 0.65,
+      "decision": 0.6
+    },
+    "field_accuracy_defect": 0.375,
+    "per_field_defect": {
+      "aircraft_id": 0.5625,
+      "component": 0.4375,
+      "severity": 0.125,
+      "grounded": 0.375
+    },
+    "go_no_go_accuracy": 0.6,
+    "qa_rubric_score": 0.5833,
+    "latency_s": {
+      "n": 42,
+      "mean": 10.731,
+      "p50": 7.8093,
+      "p95": 26.5386,
+      "min": 0.4353,
+      "max": 60.005,
+      "stdev": 10.3426
+    },
+    "tokens_per_s": {
+      "n": 42,
+      "mean": 15.6526,
+      "p50": 15.9654,
+      "p95": 23.5664,
+      "min": 2.9392,
+      "max": 27.8909,
+      "stdev": 6.4081
+    },
+    "infra_errors": 0,
+    "load_avg_1m_during": {
+      "n": 42,
+      "mean": 3.2762,
+      "p50": 2.685,
+      "p95": 5.386,
+      "min": 2.27,
+      "max": 5.54,
+      "stdev": 1.121
+    },
+    "peak_rss_mb": 1767.2,
+    "constrained_decoding": false,
+    "hardware": {
+      "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "python": "3.12.15",
+      "cpu_count_logical": 2,
+      "ram_total_gb": 8.33,
+      "ram_available_gb_at_start": 6.57,
+      "load_avg_1m_at_start": 4.64,
+      "gpu": "none",
+      "timestamp_utc": "2026-11-06T06:11:49Z"
+    }
+  }
+}
