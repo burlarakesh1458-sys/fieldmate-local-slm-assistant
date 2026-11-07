@@ -1,5 +1,8 @@
 # FieldMate: an offline drone-ops assistant on small language models
 
+<!-- links -->
+[![CI](https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant/actions/workflows/ci.yml) **Live demo:** <http://rakeshburla.dpdns.org/fieldmate-local-slm-assistant/> · **Code:** <https://github.com/burlarakesh1458-sys/fieldmate-local-slm-assistant> · **Resume bullets:** [RESUME_BULLETS.md](RESUME_BULLETS.md) · **License:** MIT
+
 FieldMate turns a drone pilot's messy field notes into **validated JSON** (pre-flight go/no-go
 checks, maintenance defect reports) and answers questions about a fleet log. It runs **entirely
 offline** on small language models (1B to 4B parameters) served by [Ollama](https://ollama.com):
